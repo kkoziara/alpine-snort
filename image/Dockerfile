@@ -7,12 +7,16 @@ RUN mkdir -p /opt/pulledpork && \
     curl -o - -L https://github.com/shirkdog/pulledpork/archive/0.7.2.tar.gz | tar zxf - --strip-components=1 && \
     chmod 755 pulledpork.pl
 
+RUN cd /var/lib/snort && \
+    curl -o - -L wget https://www.snort.org/downloads/snort/snort-2.9.8.3.tar.gz | tar zxf - --strip-components=1
+
 RUN sed -i \
     -e 's#^var RULE_PATH.*#var RULE_PATH /data/etc/snort/rules#' \
     -e 's#^var WHITE_LIST_PATH.*#var WHITE_LIST_PATH /data/etc/snort/rules#' \
     -e 's#^var BLACK_LIST_PATH.*#var BLACK_LIST_PATH /data/etc/snort/rules#' \
     -e 's/^\(include $.*\)/# \1/' \
     -e 's/^\(dynamicdetection.*\)/# \1/' \
+    -e 's/^ipvar HOME_NET.*/include \/settings\/home_net.conf /' \
     -e '$a\\ninclude $RULE_PATH/snort.rules' \
     -e 's!^# \(config logdir:\)!\1 /data/var/log/snort!' \
         /etc/snort/snort.conf
